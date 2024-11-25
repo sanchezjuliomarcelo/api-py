@@ -6,9 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 import time
-import subprocess  # Asegúrate de importar subprocess
+import subprocess  # Importar subprocess
 
 app = FastAPI()
 
@@ -23,20 +22,15 @@ def read_root():
 def scrape_website(url_item: URLItem):
     url = url_item.url
 
-    # === Aquí agregamos el código para determinar la ubicación de Chromium ===
+    # === Determinar la ubicación del ejecutable de Chromium ===
     # Obtener la ubicación del ejecutable de Chromium
     try:
         chrome_path = subprocess.check_output(['which', 'chromium-browser']).decode('utf-8').strip()
         print(f"Ubicación de Chromium: {chrome_path}")
     except Exception as e:
-        print(f"No se pudo encontrar 'chromium-browser'. Intentando con 'chromium'. Error: {e}")
-        try:
-            chrome_path = subprocess.check_output(['which', 'chromium']).decode('utf-8').strip()
-            print(f"Ubicación de Chromium: {chrome_path}")
-        except Exception as e:
-            print(f"No se pudo encontrar 'chromium'. Error: {e}")
-            raise HTTPException(status_code=500, detail="No se pudo encontrar el ejecutable de Chromium en el sistema.")
-    # ==========================================================================
+        print(f"No se pudo encontrar 'chromium-browser'. Error: {e}")
+        raise HTTPException(status_code=500, detail="No se pudo encontrar el ejecutable de Chromium en el sistema.")
+    # =========================================================
 
     # Configurar opciones de Chrome
     chrome_options = Options()
@@ -49,8 +43,9 @@ def scrape_website(url_item: URLItem):
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.binary_location = chrome_path  # Establecer la ubicación del ejecutable de Chromium
 
-    # Usar webdriver-manager para obtener el ChromeDriver
-    service = Service(ChromeDriverManager().install())
+    # Especificar la ruta de ChromeDriver
+    chromedriver_path = '/usr/bin/chromedriver'  # Ruta estándar en muchos sistemas
+    service = Service(executable_path=chromedriver_path)
 
     # Configurar el WebDriver de Chrome
     driver = webdriver.Chrome(service=service, options=chrome_options)

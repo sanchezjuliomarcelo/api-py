@@ -3,4 +3,3 @@ uvicorn
 selenium==4.5.0
 gunicorn
 pydantic
-webdriver-manager
