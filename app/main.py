@@ -1,11 +1,14 @@
 # app/main.py
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import subprocess  # Asegúrate de importar subprocess
 
 app = FastAPI()
 
@@ -20,6 +23,21 @@ def read_root():
 def scrape_website(url_item: URLItem):
     url = url_item.url
 
+    # === Aquí agregamos el código para determinar la ubicación de Chromium ===
+    # Obtener la ubicación del ejecutable de Chromium
+    try:
+        chrome_path = subprocess.check_output(['which', 'chromium-browser']).decode('utf-8').strip()
+        print(f"Ubicación de Chromium: {chrome_path}")
+    except Exception as e:
+        print(f"No se pudo encontrar 'chromium-browser'. Intentando con 'chromium'. Error: {e}")
+        try:
+            chrome_path = subprocess.check_output(['which', 'chromium']).decode('utf-8').strip()
+            print(f"Ubicación de Chromium: {chrome_path}")
+        except Exception as e:
+            print(f"No se pudo encontrar 'chromium'. Error: {e}")
+            raise HTTPException(status_code=500, detail="No se pudo encontrar el ejecutable de Chromium en el sistema.")
+    # ==========================================================================
+
     # Configurar opciones de Chrome
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -29,7 +47,7 @@ def scrape_website(url_item: URLItem):
     chrome_options.add_argument("--disable-dev-tools")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--window-size=1920,1080")
-    # No es necesario especificar binary_location al usar webdriver-manager
+    chrome_options.binary_location = chrome_path  # Establecer la ubicación del ejecutable de Chromium
 
     # Usar webdriver-manager para obtener el ChromeDriver
     service = Service(ChromeDriverManager().install())
