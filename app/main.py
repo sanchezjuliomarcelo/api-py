@@ -2,8 +2,9 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from selenium import webdriver
-from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 
 app = FastAPI()
@@ -28,10 +29,13 @@ def scrape_website(url_item: URLItem):
     chrome_options.add_argument("--disable-dev-tools")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.binary_location = '/usr/bin/chromium-browser'
+    # No es necesario especificar binary_location al usar webdriver-manager
+
+    # Usar webdriver-manager para obtener el ChromeDriver
+    service = Service(ChromeDriverManager().install())
 
     # Configurar el WebDriver de Chrome
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
         # Navegar al sitio web
@@ -72,5 +76,4 @@ def scrape_website(url_item: URLItem):
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
-        # Cerrar el navegador
         driver.quit()
