@@ -7,7 +7,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
-import subprocess  # Importar subprocess
 
 app = FastAPI()
 
@@ -22,32 +21,22 @@ def read_root():
 def scrape_website(url_item: URLItem):
     url = url_item.url
 
-    # === Determinar la ubicación del ejecutable de Chromium ===
-    # Obtener la ubicación del ejecutable de Chromium
-    try:
-        chrome_path = subprocess.check_output(['which', 'chromium-browser']).decode('utf-8').strip()
-        print(f"Ubicación de Chromium: {chrome_path}")
-    except Exception as e:
-        print(f"No se pudo encontrar 'chromium-browser'. Error: {e}")
-        raise HTTPException(status_code=500, detail="No se pudo encontrar el ejecutable de Chromium en el sistema.")
-    # =========================================================
-
     # Configurar opciones de Chrome
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-dev-tools")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.binary_location = chrome_path  # Establecer la ubicación del ejecutable de Chromium
 
-    # Especificar la ruta de ChromeDriver
-    chromedriver_path = '/usr/bin/chromedriver'  # Ruta estándar en muchos sistemas
-    service = Service(executable_path=chromedriver_path)
+    # Establecer la ubicación del ejecutable de Chrome (Chromium)
+    chrome_options.binary_location = "/usr/bin/chromium"
 
-    # Configurar el WebDriver de Chrome
+    # Configurar el servicio de ChromeDriver
+    service = Service(executable_path="/usr/bin/chromedriver")
+
+    # Inicializar el WebDriver
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
