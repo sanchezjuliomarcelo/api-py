@@ -11,6 +11,10 @@ app = FastAPI()
 class URLItem(BaseModel):
     url: str
 
+@app.get("/")
+def read_root():
+    return {"message": "API de scraping activa. Utiliza el endpoint '/scrape' con una solicitud POST para extraer datos."}
+
 @app.post("/scrape")
 def scrape_website(url_item: URLItem):
     url = url_item.url
@@ -24,8 +28,6 @@ def scrape_website(url_item: URLItem):
     chrome_options.add_argument("--disable-dev-tools")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--window-size=1920,1080")
-    
-    # Actualizar la ubicación binaria de Chrome para Render
     chrome_options.binary_location = '/usr/bin/chromium-browser'
 
     # Configurar el WebDriver de Chrome
